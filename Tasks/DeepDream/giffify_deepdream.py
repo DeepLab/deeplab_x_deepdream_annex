@@ -29,6 +29,23 @@ def giffify_deepdream(uv_task):
 
 		uv_task.fail(message=error_msg)
 		return
+
+	import os
+	from vars import ASSET_TAGS
+
+	gif = dd.getAssetsByTagName(ASSET_TAGS['DLXDD_GIF'])[-1]
+	r_file_name = "%s.gif" % dd.file_name
+	r_content = dd.loadFile(os.path.join(dd.base_path, gif['file_name']))
+
+	if not dd.post_to_slack(r_file_name, r_content, \
+		title="GIF! GIF! GIF!", bot_callback="want MOAR? want GIF? my id is `%s`" % dd._id):
+		
+		error_msg = "Result from post not OK"
+		print "\n\n************** %s [ERROR] ******************\n" % task_tag
+		print error_msg
+		
+		uv_task.fail(message=error_msg)
+		return
 	
 	uv_task.routeNext()
 	uv_task.finish()

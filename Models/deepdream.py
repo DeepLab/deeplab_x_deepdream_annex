@@ -100,31 +100,55 @@ class DeepDream(UnveillanceDocument):
 	def giffify(self):
 		from fabric.api import settings, local
 
-		avi_path = self.getAssetsByTagName(ASSET_TAGS['DLXDD_AVI'])
-		gif_path = self.getAssetsByTagName(ASSET_TAGS['DLXDD_GIF'])
+		avi_path = None
+		gif_path = None
+
+		try:
+			avi_path = self.getAssetsByTagName(ASSET_TAGS['DLXDD_AVI'])[0]['file_name']
+		except Exception as e:
+			pass
+
+		try:
+			gif_path = self.getAssetsByTagName(ASSET_TAGS['DLXDD_GIF'])[0]['file_name']
+		except Exception as e:
+			pass
+
 		ffmpeg = getConfig('ffmpeg')
 
 		if avi_path is None:
 			avi_path = self.addAsset(None, "deepdream_gif.avi",
-				tags=[ASSET_TAGS['DLXDD_AVI']], description="avi of DeepDream gif")		
+				tags=[ASSET_TAGS['DLXDD_AVI']], description="avi of DeepDream gif")
 
-		with settings(warn_only=True):
-			# image sequence to .avi {ATTENTION FORMATTING!}
-			avi_path_tmp = avi_path.replace(".avi", "_tmp.avi")
-
-			local("%s -y -f image2 -i dream_%d.jpg %s" % (ffmpeg, avi_path_tmp))
-
-			# slow down .avi
-			local("%s -y -i %s -filter:v \"setpts=10.0*PTS\" %s" % (ffmpeg, avi_path_tmp, avi_path))
-
-			# burn to gif
-			if gif_path is None:
+		if gif_path is None:
 				gif_path = self.addAsset(None, "deepdream.gif",
 					tags=[ASSET_TAGS['DLXDD_GIF']], description="gif of DeepDream")
 
-			local("%s -y -i %s -pix_fmt rgb24 %s" % (ffmpeg, avi_path, gif_path))
+		avi_path_tmp = os.path.join(ANNEX_DIR, avi_path.replace(".avi", "_tmp.avi"))
+		gif_cmds = [
+			"{0} -y -f image2 -i dream_%d.jpg {1}".format(ffmpeg, avi_path_tmp),
+			"%s -y -i %s -filter:v \"setpts=10.0*PTS\" %s" % (ffmpeg, avi_path_tmp, avi_path),
+			"%s -y -i %s -pix_fmt rgb24 %s" % (ffmpeg, avi_path, gif_path)
+		]
+
+		try:
+			THIS_DIR = os.getcwd()
+			os.chdir(os.path.join(ANNEX_DIR, self.base_path))
+			
+			for cmd in gif_cmds:
+				with settings(warn_only=True):
+					c = local(cmd)
+
+					if c.return_code != 0:
+						print "Process failed with return code %d" % c.return_code
+						os.chdir(THIS_DIR)
+						return False
+
+			os.chdir(THIS_DIR)
 
 			return True
+		except Exception as e:
+			print "COULD NOT MAKE A GIF"
+			print e, type(e)
 
 		return False
 
