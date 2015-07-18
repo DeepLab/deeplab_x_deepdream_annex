@@ -1,0 +1,6 @@
+.DS_Store
+*.pyc
+
+conf
+lib/caffe
+Tasks/DeepDream/test.py

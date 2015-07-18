@@ -1,0 +1,24 @@
+{
+	"ASSET_TAGS" : {
+		"DLXDD_DD" : "deeplab-x-deepdream_deepdream",
+		"DLXDD_AVI" : "deeplab-x-deepdream_avi",
+		"DLXDD_GIF" : "deeplab-x-deepdream_gif",
+		"DLXDD_DERIV" : "deeplab-x-deepdream_main-derivative"
+	},
+	"MIME_TYPES" : {
+		"jpg" : "image/jpeg",
+		"png" : "image/png"
+	},
+	"MIME_TYPE_MAP" : {
+		"image/jpeg" : "jpg",
+		"image/png" : "png"
+	},
+	"MIME_TYPE_TASKS" : {
+		"image/jpeg" : [
+			"DeepDream.create_deepdream.create_deepdream"
+		],
+		"image/png" : [
+			"DeepDream.create_deepdream.create_deepdream"
+		]
+	}
+}

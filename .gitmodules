@@ -1,0 +1,6 @@
+[submodule "lib/Annex"]
+	path = lib/Annex
+	url = git@github.com:unveillance/UnveillanceAnnex.git
+[submodule "lib/caffe"]
+	path = lib/caffe
+	url = https://github.com/BVLC/caffe.git
