@@ -1,15 +1,16 @@
-import os
+from __future__ import division
+
+import os, json, requests
 from batcountry import BatCountry
 from PIL import Image
 import numpy as np
 
 from lib.Worker.Models.uv_document import UnveillanceDocument
 from vars import EmitSentinel, ASSET_TAGS
-from conf import ANNEX_DIR, getConfig
+from conf import ANNEX_DIR, getConfig, getSecrets
 
 class DeepDream(UnveillanceDocument):
 	def __init__(self, _id=None, inflate=None):
-
 		super(DeepDream, self).__init__(_id=_id, inflate=inflate)
 
 	def get_image(self, file_name=None):
@@ -20,6 +21,33 @@ class DeepDream(UnveillanceDocument):
 
 		print "GETTING IMAGE AT PATH %s" % os.path.join(ANNEX_DIR, file_name)
 		return Image.open(os.path.join(ANNEX_DIR, file_name))
+
+	def post_to_slack(self, file_name, file_content, bot_callback=None, title=None):
+		slack = getSecrets('slack')
+
+		data = {
+			'token' : slack['api_token'],
+			'title' : "i deepdreamed..." if title is None else title,
+			'channels' : slack['channel_id']
+		}
+
+		try:
+			r = requests.post("https://slack.com/api/files.upload", data=data, files={ 'file' : file_content})
+			res = json.loads(r.content)
+
+			if not res['ok']:
+				return False
+
+			if bot_callback is not None:
+				r = requests.post(slack['webhook_url'], data={'payload' : json.dumps({ 'text' : bot_callback })})
+				print r.content
+
+			return True
+
+		except Exception as e:
+			print e, type(e)
+
+		return False
 
 	def downsample(self):
 		img = self.get_image()
@@ -33,9 +61,10 @@ class DeepDream(UnveillanceDocument):
 
 		if width > MAX_WIDTH or height > MAX_HEIGHT:
 			ratio = min((MAX_WIDTH / width), (MAX_HEIGHT / height))
-			new_size = ((width * ratio), (height * ratio))
-
-			img = img.resize(new_size, Image.ANTIALIAS)
+			
+			if ratio > 0:
+				new_size = (int(width * ratio), int(height * ratio))
+				img = img.resize(new_size, Image.ANTIALIAS)
 		
 		img.save(os.path.join(ANNEX_DIR, asset_path), 'JPEG')
 		return True

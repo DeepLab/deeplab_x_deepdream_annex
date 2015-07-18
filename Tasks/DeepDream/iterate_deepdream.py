@@ -39,9 +39,41 @@ def iterate_deepdream(uv_task):
 
 		sleep(5)
 
-	uv_task.put_next("DeepDream.iterate_deepdream.iterate_deepdream")
-	dd.addCompletedTask(uv_task.task_path)
-	
+	import os
+	from vars import ASSET_TAGS
+
+	try:
+		last_dream = dd.getAssetsByTagName(ASSET_TAGS['DLXDD_DD'])[-1]
+		r_file_name = "%s_%s" % (last_dream['file_name'].replace(".jpg", ""), dd.file_name)
+		r_content = dd.loadFile(os.path.join(dd.base_path, last_dream['file_name']))
+
+		if r_content is None:
+			error_msg = "No deepdream found at %s" % last_dream['file_name']
+			print "\n\n************** %s [ERROR] ******************\n" % task_tag
+			print error_msg
+			
+			uv_task.fail(message=error_msg)
+			return
+
+		if not dd.post_to_slack(r_file_name, r_content, \
+			title="I deepdreamed...", bot_callback="want MOAR? want GIF? my id is `%s`" % dd._id):
+			
+			error_msg = "Result from post not OK"
+			print "\n\n************** %s [ERROR] ******************\n" % task_tag
+			print error_msg
+			
+			uv_task.fail(message=error_msg)
+			return
+
+	except Exception as e:
+		error_msg = e
+		print "\n\n************** %s [ERROR] ******************\n" % task_tag
+		print error_msg, type(e)
+		
+		uv_task.fail(message=error_msg)
+		return
+
+	dd.addCompletedTask(uv_task.task_path)	
 	uv_task.routeNext()
 	uv_task.finish()
 	print "\n\n************** %s [END] ******************\n" % task_tag
