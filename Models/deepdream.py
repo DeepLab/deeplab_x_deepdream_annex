@@ -105,11 +105,13 @@ class DeepDream(UnveillanceDocument):
 
 		try:
 			avi_path = self.getAssetsByTagName(ASSET_TAGS['DLXDD_AVI'])[0]['file_name']
+			avi_path = os.path.join(ANNEX_DIR, self.base_path, avi_path)
 		except Exception as e:
 			pass
 
 		try:
 			gif_path = self.getAssetsByTagName(ASSET_TAGS['DLXDD_GIF'])[0]['file_name']
+			gif_path = os.path.join(ANNEX_DIR, self.base_path, gif_path)
 		except Exception as e:
 			pass
 
@@ -118,12 +120,14 @@ class DeepDream(UnveillanceDocument):
 		if avi_path is None:
 			avi_path = self.addAsset(None, "deepdream_gif.avi",
 				tags=[ASSET_TAGS['DLXDD_AVI']], description="avi of DeepDream gif")
+			avi_path = os.path.join(ANNEX_DIR, avi_path)
 
 		if gif_path is None:
 				gif_path = self.addAsset(None, "deepdream.gif",
 					tags=[ASSET_TAGS['DLXDD_GIF']], description="gif of DeepDream")
+				gif_path = os.path.join(ANNEX_DIR, gif_path)
 
-		avi_path_tmp = os.path.join(ANNEX_DIR, avi_path.replace(".avi", "_tmp.avi"))
+		avi_path_tmp = avi_path.replace(".avi", "_tmp.avi")
 		gif_cmds = [
 			"{0} -y -f image2 -i dream_%d.jpg {1}".format(ffmpeg, avi_path_tmp),
 			"%s -y -i %s -filter:v \"setpts=10.0*PTS\" %s" % (ffmpeg, avi_path_tmp, avi_path),
