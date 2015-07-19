@@ -23,8 +23,12 @@ if __name__ == "__main__":
 		if not os.path.exists(sec_config['dropbox_root']):
 			print "WARNING: NO DROPBOX FOLDER AT %s" % sec_config['dropbox_root']
 
-	if 'slack_webhook_url' not in sec_config.keys():
-		sec_config['slack_webhook_url'] = prompt("What is your Slack webhook URL? ")
+	if 'slack' not in sec_config.keys():
+		sec_config['slack'] = {}
+
+	for s in ['channel_id', 'webhook_url']:
+		if s not in sec_config['slack'].keys():
+			sec_config['slack'][s] = prompt("What is your Slack %s? " % s)
 
 	if 'caffe_root' not in sec_config.keys():
 		caffe_root = os.getenv('CAFFE_ROOT')

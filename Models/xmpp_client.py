@@ -68,6 +68,7 @@ class DLXDD_XMPP(ClientXMPP):
 
 			with settings(warn_only=True):
 				local("cp %s %s" % (file_path, ANNEX_DIR))
+				local("rm %s" % file_path)
 
 			with settings(warn_only=True):
 				whoami = local("whoami", capture=True)
