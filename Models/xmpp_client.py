@@ -32,12 +32,6 @@ class DLXDD_XMPP(ClientXMPP):
 			print e, type(e)
 
 	def __on_message(self, msg):
-		print msg
-		print msg.keys()
-
-		print dir(msg['from'])
-		print dir(msg['body'])
-
 		if msg['from'].jid.split('/')[0] != self.cred['bot_jid']:
 			print "message not from our bot"
 			return
@@ -69,8 +63,6 @@ class DLXDD_XMPP(ClientXMPP):
 			with settings(warn_only=True):
 				local("cp %s %s" % (file_path, ANNEX_DIR))
 				local("rm %s" % file_path)
-
-			with settings(warn_only=True):
 				whoami = local("whoami", capture=True)
 
 			THIS_DIR = os.getcwd()
